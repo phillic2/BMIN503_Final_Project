@@ -15,64 +15,91 @@ options(width = 400)
 Use this template to complete your project throughout the course. Your Final Project presentation in class will be based on the contents of this document. Replace the title/name and text below with your own, but leave the headers. 
 
 ### Overview
-In this section, give a brief a description of your project and its goal, what data you are using to complete it, and what three faculty/staff in different fields you have spoken to about your project with a brief summary of what you learned from each person. Include a link to your final project GitHub repository.
+Overview Instructions: In this section, give a brief a description of your project and its goal, what data you are using to complete it, and what three faculty/staff in different fields you have spoken to about your project with a brief summary of what you learned from each person. Include a link to your final project GitHub repository.
 
-The goal of this study is to utilize PEDSnet, a pediatric learning health system, to describe the weight loss and growth patterns in pediatric patients during cancer treatment for leukemia and lymphoma, identify the patients at greatest risk for malnutrition, and compare outcomes between subgroups of patients as defined by their nutritional status. PEDSnet contains electronic health record data from eight pediatric hospitals working together to form a pediatric learning health system. My central hypothesis is that multiple weight loss patterns exist within pediatric oncology and early onset undernutrition is associated with increased mortality, and higher resource utilization. 
+
+The goal of this study is to utilize PEDSnet***, a pediatric learning health system, to describe the body mass index (BMI) patterns during treatment for pediatric leukemia and lymphoma. Trajectory modeling will identify the patients at greatest risk for malnutrition, and compare mortality between subgroups of patients as defined by their BMI trajectory PEDSnet contains electronic health record data from eight pediatric hospitals working together to form a pediatric learning health system. My central hypothesis is that multiple BMI patterns exist within pediatric oncology and early onset undernutrition is associated with increased mortality. 
+
+Acknowledgements:
+I would like to thank the following faculty members for their mentorship for this project. Specifically, I would like to thank Dr. Chen Kenyon for his assistance with trajectory modeling, Dr. Charlie Bailey for his expertise in pediatric oncology, and Elizabeth Smith for her expertise in nutrition for pediatric oncology patients. 
+
+Link to final project GitHub repository:  https://github.com/phillic2/BMIN503_Final_Project
+
+***Please note PEDSnet is not a publically available dataset. The text in this file is correct and based upon actual data. All files, graphs, tables, and figures are fabricated and modeled after PEDSnet but do NOT contain actual patient data. Therefore, the text will NOT match the figures and graphs. These files should be used for proof of concept only.
 
 
 ### Introduction 
-In the first paragraph, describe the problem addressed, its significance, and some background to motivate the problem.
+Introduction Instructions: In the first paragraph, describe the problem addressed, its significance, and some background to motivate the problem. In the second paragraph, explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.
 
-In the second paragraph, explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.
+According to the National Cancer Institute’s Surveillance, Epidemiology, and End Results (SEER) Program, there are approximately 15,000 cases on childhood cancer annually and the rates are slowly increasing over time. SEER data was recently released for 2014 and the age-adjusted cancer rates for children under the age of 20 was at 18.4 cases per 100,000 people which was a record high in the United States. The Children’s Oncology Group (COG) recognizes nutrition as a critical component of cancer care. Nutritional derangements, including being both underweight and overweight, are known to reduce survival and increase morbidity in pediatric malignancies. Additionally, nutritional derangements are extremely common, with up to three-fourths of children having some nutritional derangement at the time of diagnosis. Variation occurs between institutions regarding nutritional supports and this is further complicated by different indicators used to follow nutritional derangements between centers. Proactive, early nutritional support is known to improve weight and nutritional status but its effect on cancer-related outcomes is unknown. While there is consensus nutritional support is important, the timing and content of these interventions is not standard.  One landmark study has examined weight, height, and growth trajectories by broad cancer categories; however the study was limited in that no single group had more than 53 patients. Additionally, because the treatment intensity could have varied significantly within each of the assigned groups of “solid,” “hematological,” and “brain” tumors, it remains unclear if subpopulations within these groups behave very differently compared to the groups as a whole. This project will be the first to use trajectory modeling to determine what nutritional subpopulations exist for pediatric leukemia and lymphoma. Once identified, malnourished patients can be targeted for intervention and assessed for improved outcomes. 
 
-According to the National Cancer Institute’s Surveillance, Epidemiology, and End Results (SEER) Program, there are approximately 15,000 cases on childhood cancer annually and the rates are slowly increasing over time. SEER data was recently released for 2014 and the age-adjusted cancer rates for children under the age of 20 was at 18.4 cases per 100,000 people which was a record high in the United States.  The Children’s Oncology Group (COG) recognizes nutrition as a critical component of cancer care. Nutritional derangements, including being both underweight and overweight, are known to reduce survival and increase morbidity in pediatric malignancies. Additionally, nutritional derangements are extremely common, with up to three-fourths of children having some nutritional derangement at the time of diagnosis. Variation occurs between institutions regarding nutritional supports and this is further complicated by different indicators used to follow nutritional derangements between centers. Proactive, early nutritional support is known to improve weight and nutritional status but its effect on cancer-related outcomes is unknown. While there is consensus nutritional support is important, the timing and content of these interventions is not standard.  One landmark study has examined weight, height, and growth trajectories by broad cancer categories; however the study was limited in that no single group had more than 53 patients. Additionally, because the treatment intensity could have varied significantly within each of the assigned groups of “solid,” “hematological,” and “brain” tumors, it remains unclear if subpopulations within these groups behave very differently compared to the groups as a whole. This project will be the first to use trajectory modeling to determine what nutritional subpopulations exist for pediatric leukemia and lymphoma.
-
-This project is interdisciplinary at both the clinical and methodologic level. Clinically, it merges developmental pediatrics, nutrition, and oncology. Methodologically, it applies group-based trajectory modeling with traditional epidemiologic research. I have benefited from methodologic discussions with statisticians including Dr. Yong Chen and researchers who have previously incorporated trajectory modeling including Dr. Chen Kenyon. I have also identified my planned R package for the trajectory modeling, traj. Clinically, this project has been discussed with a pediatric oncologist, Dr. Charles Bailey and a dietician, Elizabeth Smith. These discussions have led to focusing the project on leukemia and lymphoma and the selection of outcomes including mortality.
+This project requires an interdisciplinary at both the clinical and methodologic level. Clinically, it merges developmental pediatrics, nutrition, and oncology. Methodologically, it applies group-based trajectory modeling with traditional epidemiologic research. I have benefited from methodologic discussions with statisticians and researchers who have previously incorporated trajectory modeling including Dr. Chen Kenyon. Clinically, this project has benefited from insite from a pediatric oncologist, Dr. Charles Bailey and a registered dietician, Elizabeth Smith. Leukemia and lymphoma were selected for study due to their relatively common occurrence and relatively similar nutritional concerns during therapy. Based upon prior studies, mortality was selected as the primary outcome of interest. 
 
 
 ### Methods
-In the first paragraph, describe the data used and general methodological approach. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why. 
+Methods Instructions: In the first paragraph, describe the data used and general methodological approach. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why. 
 
-Overview and Conceptual Framework
-The conceptual model for this study begins with the premise that oncology patients comprise multiple subgroups with different nutritional and growth patterns. I hypothesized that maintaining age-appropriate growth trajectories are protective during cancer treatment and reduce regimen-related morbidity, both directly and through improved delivery of cancer therapy. Age-adjusted weight trajectories will be used as a proxy for nutritional status.
+For this retrospective study, a randomly selected subset of leukemia and lymphoma patients diagnosed between 2011-2015 at a PEDSnet hospital were included for study. A pediatric oncology patient was defined as being ≤21 years of age with a new cancer diagnosis for leukemia or lymphoma, and having received treatment at a PEDSnet hospital. Patients who did not receive chemotherapy and were treated with only surgery or radiation were excluded, as their treatment intensity cannot be well measured in PEDSnet data. Patient characteristics including gender, race, diagnosis, age at diagnosis, and mortality data were obtained. A separate dataset contained age-adjusted BMI information and was also exported. BMI information was converted to age-adjusted Z-scores prior to exporting from PEDSnet (code not shown for privacy).
 
-Data Source
-PEDSnet will be the data source. PEDSnet is a pediatric clinical research network contianing cancer diagnoses, treatment, laboratory test data, weight, and BMI measurements for all admissions and clinic visits. Weight and BMI information will be converted to Z-scores and trended over time. 
+```{r eval = TRUE, message=FALSE, warning = FALSE}
+# Load packages
+library(readr)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(reshape2)
+library(traj)
+library(ggplot2)
 
-Study Design 
-I will perform a retrospective study of newly diagnosed pediatric oncology patients from 2011-2016. A pediatric oncology patient will be defined as being ≤21 years of age with a new cancer diagnosis for leukemia or lymphoma, and having received treatment at a PEDSnet hospital. Patients who do not receive chemotherapy and are treated with only surgery or radiation will be excluded, as their treatment intensity cannot be well measured in PEDSnet data. During the time period of interest from 2011-2016, I expect approximately 700 patients in PEDSnet to meet inclusion criteria. Weight trajectories will be followed for a 1-year period.
+# Load csv files with demographic, diagnosis, and death data
+demo_dx_death_fake <- read_csv("~/Documents/MSHP Class/EPI 600 data science/final project/demo_dx_death_fake.csv")
 
-Specific Aim 1: Describe patterns of weight loss and growth in pediatric leukemia and lymphoma patients as indicators of nutritional status.
+# Load csv file with Body Mass Index (BMI) data
+bmi_data_fake <- read_csv("~/Documents/MSHP Class/EPI 600 data science/final project/bmi_data_fake.csv")
+```
 
-Hypothesis 1: Multiple distinct categories of nutritional status and weight loss exist for pediatric patients receiving cancer treatment
+BMI trajectories were followed for a 1-year period. The starting time point was defined as the day the leukemia or pymphoma was diagnosed. Z-scores were tracked in units of days since diagnosis. For each person, the BMI z-scores were averaged over each month. For the purposes of this study, months 1-11 contained 30 days and month 12 had 35 days. Only complete cases with 12 z-score values were included in the final analysis. 
 
-Weight and BMI Z-score values will be obtained from PEDSnet. The starting time point will be defined as the first day chemotherapy is administered. Z-scores will be tracked in units of days since diagnosis. Z-score trends over time will be described using group-based trajectory modeling (GBTM). GBTM uses trajectory subgroups to identify and characterize differential patterns of individual change over time.1 For GBTM, each individual is assumed to belong to 1 and only 1 group wherein each group has its own distinct trajectory.2 I will perform 2, 3, 4, 5, 6, 7 and 8-group solutions to identify the optimal number of weight, and BMI groups within pediatric cancer patients. The final model will be selected based on a combination of Bayesian information criterion and the size of the trajectory groups. To be of sufficient size, each group must contain at least 5% of the oncology population.2 At least one group is expected to show rapid weight loss after starting cancer therapy.
+```{r eval=TRUE, message=FALSE, warning = FALSE}
+#BMI data cleaning
+#delete duplicates
+no_dup <- distinct(bmi_data_fake, id, days, .keep_all = TRUE)
 
-Specific Aim 2: Describe the physiologic and clinical characteristics of the patient population in the undernourished cohort(s) identified in Aim 1.  
+#limit to first year after diagnosis
+bmi365 <- filter(no_dup, days < 366)
 
-Key demographic and disease co-variables previously shown to contribute to both oncologic disease complexity and clinical outcomes will be compared between the nutrition subgroups.3-6 The covariates along with a brief description are shown (Table 1). 
+#remove id's with fewer than 20 measurements; these were unlikely to have received full cancer treatment at CHOP
+bmi20 <- bmi365 %>% 
+        group_by(id) %>% 
+                filter(n() > 19)
 
-Table 1: Co-Variates
-Co-variates                     Description                     Variable type
-Cancer Diagnosis                Leukemia, lymphoma, etc.        Categorical
-Sex                             Male, female                    Binary
-Race                            Black, White, Asian, etc.       Categorical
-Ethnicity                       Hispanic, non-Hispanic          Binary
-Weight for age at diagnosis     Z score                         Continuous
-Age at diagnosis                Years                           Continuous
+#convert days from diagnosis to months
+bmi_month <- mutate(bmi20, month = cut(days, breaks=c(0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 366), labels=c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)))
 
-Each nutritional subgroup will be characterized and compared to one another using both descriptive statistics and standard testing of multiple-group variance. 
+bmi_month %>% group_by(id, month) %>%
+        arrange(desc(month))
 
-Specific Aim 3 and 3B: Compare all-cause mortality by nutritional cohort.
+meanz <- bmi_month %>%
+  group_by(id, month) %>%
+  summarise_each(funs(mean(., na.rm=TRUE)), zscore)
 
-Significant under and over nutrition are known to increase morbidity and mortality for pediatric cancer patients. It is not known how particular nutritional trajectories affect these risks, or whether risk is concentrated in a subset of the overall population.
+total_month_count <-
+        meanz %>% group_by(id) %>%
+        summarise(total_months = n_distinct(month)) %>%
+        filter(total_months == 12)
+                #236 people
 
-Hypothesis 3: The most undernourished cohort has >5% increase in all-cause mortality compared to other cohorts.
+final_table <-
+        inner_join(total_month_count, meanz, by = 'id')
+```
 
-A multivariate regression model will be used to describe the association between the malnutrition subpopulation and the outcome of interest, controlling for covariates. Nutrition subgroups were included as the primary predictor variable.
+Z-score trends were described using group-based trajectory modeling (GBTM). GBTM uses trajectory subgroups to identify and characterize differential patterns of individual change over time. For GBTM, each individual is assumed to belong to 1 and only 1 group wherein each group has its own distinct trajectory. Cubic clustering criterion and scree plots were obtained to determine the optimal number of clusters. Three clusters were performed to compare the predicted optimal number of clusters to an internal control. Four, six, and eight group solutions were performed. 
+
+Based upon the trajectories, the group with the lowest mean BMI z-score was compared to the other groups. Chi square test and logistic regression modeling were used to describe the association between the malnutrition subfroup and the outcome of interest, mortality. Univariate and multivariate regression was performed to control for covariates. Nutrition subgroup was the primary predictor variable of interest.
+
 
 ### Results
-Describe your results and include relevant tables, plots, and code/comments used to obtain them. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
+Results Instructions: Describe your results and include relevant tables, plots, and code/comments used to obtain them. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
 
 Results
 * patients met inclusion criteria. The demographic characteristics of the population are shown in Table 2.
@@ -141,5 +168,5 @@ After controlling for covariates, all-cause mortality was (not) statistically si
 4.	Seif AE, Fisher BT, Li Y, et al. Patient and hospital factors associated with induction mortality in acute lymphoblastic leukemia. Pediatric blood & cancer. 2014;61(5):846-852.
 5.	Wang L, Bhatia S, Gomez SL, Yasui Y. Differential inequality trends over time in survival among U.S. children with acute lymphoblastic leukemia by race/ethnicity, age at diagnosis, and sex. Cancer epidemiology, biomarkers & prevention : a publication of the American Association for Cancer Research, cosponsored by the American Society of Preventive Oncology. 2015;24(11):1781-1788.
 6.	Co-Reyes E, Li R, Huh W, Chandra J. Malnutrition and obesity in pediatric oncology patients: causes, consequences, and interventions. Pediatric blood & cancer. 2012;59(7):1160-1167.
-
+7.      Leffondree, K. et al. (2004). Statistical measures were proposed for identifying longitudinal patterns of change in quantitative health indicators. Journal of Clinical Epidemiology, 57, 1049-1062. doi : 10.1016/j.jclinepi.2004.02.012.
 
