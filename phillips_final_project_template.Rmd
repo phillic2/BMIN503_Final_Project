@@ -1,0 +1,385 @@
+---
+title: "Association of nutrition trajectory and outcomes in pediatric leukemia and lymphoma patients"
+author: "Charles Phillips"
+output: 
+  html_document:
+    toc: false 
+    depth: 3 
+    theme: paper 
+    highlight: tango
+---
+```{r set-options, echo=FALSE, cache=FALSE}
+options(width = 400)
+```  
+***
+Use this template to complete your project throughout the course. Your Final Project presentation in class will be based on the contents of this document. Replace the title/name and text below with your own, but leave the headers. 
+
+### Overview
+Overview Instructions: In this section, give a brief a description of your project and its goal, what data you are using to complete it, and what three faculty/staff in different fields you have spoken to about your project with a brief summary of what you learned from each person. Include a link to your final project GitHub repository.
+
+
+The goal of this study is to utilize PEDSnet***, a pediatric learning health system, to describe the body mass index (BMI) patterns during treatment for pediatric leukemia and lymphoma. Trajectory modeling will identify the patients at greatest risk for malnutrition, and compare mortality between subgroups of patients as defined by their BMI trajectory PEDSnet contains electronic health record data from eight pediatric hospitals working together to form a pediatric learning health system. My central hypothesis is that multiple BMI patterns exist within pediatric oncology and early onset undernutrition is associated with increased mortality. 
+
+Acknowledgements:
+I would like to thank the following faculty members for their mentorship for this project. Specifically, I would like to thank Dr. Chen Kenyon for his assistance with trajectory modeling, Dr. Charlie Bailey for his expertise in pediatric oncology, and Elizabeth Smith for her expertise in nutrition for pediatric oncology patients. 
+
+Link to final project GitHub repository:  https://github.com/phillic2/BMIN503_Final_Project
+
+***Please note PEDSnet is not a publically available dataset. The text in this file is correct and based upon actual data. All files, graphs, tables, and figures are fabricated and modeled after PEDSnet but do NOT contain actual patient data. Therefore, the text will NOT match the figures and graphs. These files should be used for proof of concept only.
+
+
+### Introduction 
+Introduction Instructions: In the first paragraph, describe the problem addressed, its significance, and some background to motivate the problem. In the second paragraph, explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.
+
+According to the National Cancer Institute’s Surveillance, Epidemiology, and End Results (SEER) Program, there are approximately 15,000 cases on childhood cancer annually and the rates are slowly increasing over time. SEER data was recently released for 2014 and the age-adjusted cancer rates for children under the age of 20 was at 18.4 cases per 100,000 people which was a record high in the United States. The Children’s Oncology Group (COG) recognizes nutrition as a critical component of cancer care. Nutritional derangements, including being both underweight and overweight, are known to reduce survival and increase morbidity in pediatric malignancies. Additionally, nutritional derangements are extremely common, with up to three-fourths of children having some nutritional derangement at the time of diagnosis. Variation occurs between institutions regarding nutritional supports and this is further complicated by different indicators used to follow nutritional derangements between centers. Proactive, early nutritional support is known to improve weight and nutritional status but its effect on cancer-related outcomes is unknown. While there is consensus nutritional support is important, the timing and content of these interventions is not standard.  One landmark study has examined weight, height, and growth trajectories by broad cancer categories; however the study was limited in that no single group had more than 53 patients. Additionally, because the treatment intensity could have varied significantly within each of the assigned groups of “solid,” “hematological,” and “brain” tumors, it remains unclear if subpopulations within these groups behave very differently compared to the groups as a whole. This project will be the first to use trajectory modeling to determine what nutritional subpopulations exist for pediatric leukemia and lymphoma. Once identified, malnourished patients can be targeted for intervention and assessed for improved outcomes. 
+
+This project requires an interdisciplinary at both the clinical and methodologic level. Clinically, it merges developmental pediatrics, nutrition, and oncology. Methodologically, it applies group-based trajectory modeling with traditional epidemiologic research. I have benefited from methodologic discussions with statisticians and researchers who have previously incorporated trajectory modeling including Dr. Chen Kenyon. Clinically, this project has benefited from insite from a pediatric oncologist, Dr. Charles Bailey and a registered dietician, Elizabeth Smith. Leukemia and lymphoma were selected for study due to their relatively common occurrence and relatively similar nutritional concerns during therapy. Based upon prior studies, mortality was selected as the primary outcome of interest. 
+
+
+### Methods
+Methods Instructions: In the first paragraph, describe the data used and general methodological approach. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why. 
+
+For this retrospective study, a randomly selected subset of leukemia and lymphoma patients diagnosed between 2011-2015 at a PEDSnet hospital were included for study. A pediatric oncology patient was defined as being ≤21 years of age with a new cancer diagnosis for leukemia or lymphoma, and having received treatment at a PEDSnet hospital. Patients who did not receive chemotherapy and were treated with only surgery or radiation were excluded, as their treatment intensity cannot be well measured in PEDSnet data. Patient characteristics including gender, race, diagnosis, age at diagnosis, and mortality data were obtained. A separate dataset contained age-adjusted BMI information and was also exported. BMI information was converted to age-adjusted Z-scores prior to exporting from PEDSnet (code not shown for privacy).
+
+```{r eval = TRUE, message=FALSE, warning = FALSE}
+# Load packages
+library(readr)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(reshape2)
+library(traj)
+library(ggplot2)
+
+# Load csv files with demographic, diagnosis, and death data
+demo_dx_death_fake <- read_csv("~/Documents/MSHP Class/EPI 600 data science/final project/demo_dx_death_fake.csv")
+
+# Load csv file with Body Mass Index (BMI) data
+bmi_data_fake <- read_csv("~/Documents/MSHP Class/EPI 600 data science/final project/bmi_data_fake.csv")
+```
+
+BMI trajectories were followed for a 1-year period. The starting time point was defined as the day the leukemia or pymphoma was diagnosed. Z-scores were tracked in units of days since diagnosis. For each person, the BMI z-scores were averaged over each month. For the purposes of this study, months 1-11 contained 30 days and month 12 had 35 days. Only complete cases with 12 z-score values were included in the final analysis. 
+
+```{r eval=TRUE, message=FALSE, warning = FALSE}
+#BMI data cleaning
+#delete duplicates
+no_dup <- distinct(bmi_data_fake, id, days, .keep_all = TRUE)
+
+#limit to first year after diagnosis
+bmi365 <- filter(no_dup, days < 366)
+
+#remove id's with fewer than 20 measurements; these were unlikely to have received full cancer treatment at CHOP
+bmi20 <- bmi365 %>% 
+        group_by(id) %>% 
+                filter(n() > 19)
+
+#convert days from diagnosis to months
+bmi_month <- mutate(bmi20, month = cut(days, breaks=c(0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 366), labels=c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)))
+
+bmi_month %>% group_by(id, month) %>%
+        arrange(desc(month))
+
+meanz <- bmi_month %>%
+  group_by(id, month) %>%
+  summarise_each(funs(mean(., na.rm=TRUE)), zscore)
+
+total_month_count <-
+        meanz %>% group_by(id) %>%
+        summarise(total_months = n_distinct(month)) %>%
+        filter(total_months == 12)
+                #236 people
+
+final_table <-
+        inner_join(total_month_count, meanz, by = 'id')
+```
+
+```{r eval = TRUE, warning = FALSE}
+#Transforming the data from long to wide
+
+#Time
+#add time column to help with transform
+final_table_time <- mutate(final_table, time = month)
+
+#first simplify to just have id's, time, and month
+id_month <- select(final_table_time, id,month,time)
+
+#rename to match traj package
+id_month_rename <- mutate(id_month, time = factor(time, levels=c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), labels=c("time.1", "time.2","time.3","time.4","time.5","time.6","time.7","time.8","time.9","time.10","time.11","time.12"))) 
+
+#long to wide for time
+time_df <- dcast(id_month_rename, id ~ time, value.var="month")
+time_df_asnum <- time_df %>% mutate_if(is.character, as.numeric)
+time_df_asnum <- time_df_asnum %>% mutate_if(is.integer, as.numeric)
+
+#Data
+#add time column to help with transform
+final_table_data <- mutate(final_table, data = month)
+
+#first simplify to just have id's, time, and month
+id_data <- select(final_table_data, id,zscore,data)
+
+#rename to match traj package
+id_data_rename <- mutate(id_data, data = factor(data, levels=c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), labels=c("data.1", "data.2","data.3","data.4","data.5","data.6","data.7","data.8","data.9","data.10","data.11","data.12"))) 
+
+#long to wide for time
+data_df <- dcast(id_data_rename, id ~ data, value.var="zscore")
+data_df_asnum <- data_df %>% mutate_if(is.integer, as.numeric)
+```
+
+Z-score trends were described using group-based trajectory modeling (GBTM). GBTM uses trajectory subgroups to identify and characterize differential patterns of individual change over time.  The traj package used "implements the three-step procedure proposed by Leffondree et al. (2004) to identify clusters of individual longitudinal trajectories. The procedure involves (1) calculating 24 measures describing the features of the trajectories (see Appendix 1 for measures); (2) using factor analysis to select a subset of the 24 measures and (3) using cluster analysis to identify clusters of trajectories, and classify each individual trajectory in one of the clusters."
+
+Cubic clustering criterion and scree plots were obtained to determine the optimal number of clusters. Two clusters were performed to compare the predicted optimal number of clusters to an internal control. Four and eight group solutions were performed. 
+
+Based upon the trajectories, the group with the lowest mean BMI z-score was compared to the other groups. Chi square test and logistic regression modeling were used to describe the association between the malnutrition subfroup and the outcome of interest, mortality. Univariate and multivariate regression was performed to control for covariates. Nutrition subgroup was the primary predictor variable of interest.
+
+
+### Results
+Results Instructions: Describe your results and include relevant tables, plots, and code/comments used to obtain them. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
+
+The descriptive statistics for the cohort characteristics including demographics, diagnosis information, and mortality data are shown. 
+```{r eval = TRUE, warning = FALSE}
+# Demographic, diagnosis, and death descriptive statistics
+# 351 patients total
+
+# Convert age at diagnosis from months to years
+demo_dx_death <- mutate(demo_dx_death_fake, age_at_diagnosis_years = age_at_diagnosis/12)
+
+# Convert character variables to factors
+demo_dx_death <- demo_dx_death %>% mutate_if(is.character, as.factor)
+
+# Summarize table
+summary(demo_dx_death) 
+
+ggplot(data=demo_dx_death, aes(x=gender)) + 
+    geom_bar(color = 'blue', fill = 'red') 
+
+ggplot(data=demo_dx_death, aes(x=race)) +
+    geom_bar(color = 'blue', fill = 'green')
+
+ggplot(data=demo_dx_death, aes(x=age_at_diagnosis_years)) +
+    geom_histogram(binwidth = 1, color = 'blue', fill = 'orange')
+
+common_diagnosis <- count(demo_dx_death, diagnosis)
+
+common_diagnosis_pct <- mutate(common_diagnosis, n/351)
+View(common_diagnosis_pct)
+```
+
+The study cohort consisted of 351 persons. Regarding gender, 159 were female and 192 were male. The most common race was white (212/351; 60.4%) followed by black (52/351; 14.8%). 58 individuals (16.5%) chose not to report race. The four most common diagnoses were acute lymphoid leukemia (220/351; 62.7%) followed by unspecified acute leukemia (40/351; 11.4%), non-Hodgkin's lymphoma (24/351; 6.8%), and acute myeloid leukemia (19/351; 5.4%). These results are notable for their skew towards acute lymphoid leukemia (ALL). 
+
+The range for the age of diagnosis was 10 months - 284 months (23 years). The median age was 7.2 years old. This distribution for age at diagnosis is near the expected value. It is notable that no infant ALL was present in the cohort. This could help explain the low mortality rate as infant ALL has a relatively poor prognosis. 
+
+Surprisingly, the mortality rate was only 7.7% (27/351). This value is lower than expected and suggests the data may be skewed towards leukemias such as ALL with a higher than expected survival rate. 
+
+236 persons had complete data with at least 1 BMI measurement per month for the first year of cancer treatment. Demographics were analyzed for the complete cases and the results are shown below. Of note, this cohort had relatively fewer cases of both ALL (48%) and AML (3.8%). The percentage of patients were similar by gender, race, and age. Importantly, only 12 persons who died were included in this cohort, corresponding to a mortality rate of 5.1%.
+```{r eval = TRUE, warning = FALSE}
+#Statistics for cohort of complete cases with 12 z-scores
+nrow(total_month_count)
+# 236 complete cases
+
+# Repeat demographic analysis for cohort of complete cases, 236 persons. (full cohort 351 persons)
+death_cluster2 <- inner_join(demo_dx_death, id_month, by='id')
+
+# Summarize table
+summary(death_cluster2) 
+
+ggplot(data=death_cluster2, aes(x=gender)) + 
+    geom_bar(color = 'blue', fill = 'red') 
+
+ggplot(data=death_cluster2, aes(x=race)) +
+    geom_bar(color = 'blue', fill = 'green')
+
+ggplot(data=death_cluster2, aes(x=age_at_diagnosis_years)) +
+    geom_histogram(binwidth = 1, color = 'blue', fill = 'orange')
+
+common_diagnosis2 <- count(death_cluster2, diagnosis)
+
+common_diagnosis_pct2 <- mutate(common_diagnosis2, n/351)
+View(common_diagnosis_pct2)
+```
+
+Next the BMI data was analyzed and the results are shown. 
+```{r eval = TRUE, warning = FALSE}
+#range for Z-scores
+min(final_table$zscore)
+max(final_table$zscore)
+mean(final_table$zscore)
+median(final_table$zscore)
+sd(final_table$zscore)
+```
+
+236 complete cases with z-score data for all twelve months were included. The range of the age-adjusted BMI z-scores was -5.8 to 3.4. The median z-score was 0.3 and the standard deviation was 1.2. 
+
+Group-based trajectory modeling (GBTM) was performed. Cubic clustering criteria and within group sum of squares were used to determine the optimal number of clusters, 8. The graphs of the CCC criteria and Scree plot are shown. 
+```{r eval = TRUE, warning = FALSE}
+# Analyze trajectories
+
+time_list <- list(time_df_asnum)
+names(time_list) = c("time")
+
+data_list <- list(data_df_asnum)
+names(data_list) = c("data")
+
+# Set up lists for traj package
+data = data_list$data
+time = time_list$time
+
+# Run step1measures, step2factors and step3clusters
+s1 = step1measures(data,time, ID=TRUE)
+s2 = step2factors(s1)
+s3 = step3clusters(s2)
+# between 4-8 clusters seems to be the best
+```
+
+While the optimal number of clusters was determined to be 8, 4 cluster analysis was performed as an internal control. Cluster plots of data vs time are shown for repeated sampling. The clusters are relatively similar over time. Less variablity was demonstrated with the 8 cluster solution compared to the 4 cluster solution. 
+```{r eval = TRUE, warning = FALSE}
+# Assigning number of clusters
+# 4 and 8 clusters chosen from plot of s2
+s3.4clusters = step3clusters(s2, nclust = 4)
+s3.8clusters = step3clusters(s2, nclust = 8)
+
+# Display "traj" object
+s3.4clusters
+summary(s3.4clusters)
+plot(s3.4clusters)
+
+s3.8clusters
+summary(s3.8clusters)
+plot(s3.8clusters)
+```
+
+For both the 4 and 8 cluster solutions, boxplots of the trajectories were obtained. In the 4 cluster solution, the boxplots centered around 0 with cluster 3 having the most variability.
+```{r eval = TRUE, warning = FALSE}
+# Plot boxplots
+plotBoxplotTraj(s3.4clusters)
+```
+
+In the 8 cluster solution, the majority of the clusters again were close to 0. The exceptions were cluster 5 which was below 0 near a typical z-score of -1 and cluster 7 had a z-score consistently above 0 and near 1. 
+```{r eval = TRUE, warning = FALSE}
+plotBoxplotTraj(s3.8clusters)
+```
+
+After examing the boxplots, the 4 cluster solution was expected to have mean cluster z-scores near 0. The mean z-scores for the trajectories were graphed and the result of the 4 cluster solution is shown. 
+```{r eval = TRUE, warning = FALSE}
+# Plot mean combination trajectories
+plotCombTraj(s3.4clusters)
+```
+
+Likewise, the 8 cluster solution was also graphed with the mean z-scores plotted. As expected, cluster 5 was the cluster with the lowest mean z-score and this was consistently near -1. 
+```{r eval = TRUE, warning = FALSE}
+plotCombTraj(s3.8clusters)
+# with 8 clusters, group 5 seems to be the most different and has the lowest BMI
+```
+
+For the 8 cluster solution, the assigned cluster values were appended to the demographic, diagnosis, and mortality table.
+```{r eval = TRUE, warning = FALSE}
+# Obtain cluster information by ID
+clusters <- s3.8clusters$clusters
+clusters <- rename(clusters, id = ID)
+
+# Join cluster group to demo_dx_death
+death_cluster <- left_join(demo_dx_death, clusters, by='id')
+```
+
+The distribution of patients across the trajectories were examined. 61 persons were in cluster 5, the cluster of interest. Several clusters had only a couple persons and these tended to group around a mean BMI z-score of 0. The largest cluster was cluster 7 with 125 persons. 
+```{r eval = TRUE, warning = FALSE}
+#Statistics for clusters
+count(death_cluster, cluster)
+# 61 people in cluster 5
+
+death_cluster_binary <- mutate(death_cluster, group5.status = factor(cluster == 5, labels=c(0, 1))) 
+death_cluster_binary <- mutate(death_cluster_binary, death.status = factor(deceased, levels=c("no", "yes"), labels=c(0, 1)))
+```
+
+As a first step in analysis, the number of deaths in cluster 5 and the associated mortality rate were determined.
+```{r eval = TRUE, warning = FALSE}
+#how many deaths are in group 5?
+death_cluster_binary_summary <- filter(death_cluster_binary, death.status == 1) 
+death_cluster_binary_summary %>% count(cluster)
+#2 deaths in cluster 5
+
+# Mortality rate in cluster 5
+2/61
+# 3.3%
+
+# Mortality rate in all other clusters combined
+10/175
+# 5.7%
+```
+
+Next, chi square testing was performed to test for association of being in cluster 5, the lowest BMI cluster, with mortality. Cluster 5 was not associated with mortality with a p value = 0.68. 
+```{r eval = TRUE, warning = FALSE}
+# Unadjusted analysis
+# Chi square
+chisq.test(table(death_cluster_binary$death.status, death_cluster_binary$group5.status)) 
+        # p-value = 0.6838
+```
+
+Next, simple logistic regression was performed with only mortality and cluster data. As expected from the chi square, cluster 5 was not associated with mortality. Of note, the confidence intervals for the regression were very large (p = 0.46, CI -0.79, 2.47).
+```{r eval = TRUE, warning = FALSE}
+# Logistic regression
+deceased.fit <- glm(death.status ~ group5.status, death_cluster_binary, family=binomial())
+summary(deceased.fit)
+        # p = 0.462
+
+# Suspect wide confidence intervals
+confint(deceased.fit)
+        # very wide 95% CI -0.7886002 2.472418
+```
+
+Finally, multivariate logistic regression was performed. Gender, race, age at diagnosis, and diagnosis were held constant in this analysis. Again, cluster 5 was not associated with mortality (p = 0.44). Of note, no factor included in the logistic regression model was significantly associated with mortality. This includes low BMI, diagnosis of AML, and age at diagnosis, all of which would be expected to be associated with a higher likelihood of death. 
+```{r eval = TRUE, warning = FALSE}
+deceased.fit2 <- glm(death.status ~ group5.status + gender + race + diagnosis + age_at_diagnosis, death_cluster_binary, family=binomial())
+summary(deceased.fit2)
+# p = 0.436
+# likely underpowered or with confounders in the data, AML is not significantly associated with death with p value of 0.295
+```
+
+### Conclusions
+The notable result from this study is the successful determination of age-adjusted BMI trajectories for pediatric leukemia and lymphoma patients. An 8 cluster solution best fit the sample data of 236 leukemia and lymphoma patients. Of the 8 clusters, one had consistently higher mean BMI z-scores and one, cluster 5, had consistently lower mean BMI z-scores. The remaining 6 clusters all had mean z-scores near 0. 
+
+We hypothesized the low BMI cluster, cluster 5, would have a higher mortality rate. This was based upon prior literature indicating undernutrition was associated with higher mortality. Those persons in cluster 5 did not have a higher mortality compared to those who did not. 
+
+The mortality results have poor face validity. From the literature, persons with AML and with older age (or very young age) would be expected to have higher mortality. In multivariate logistic regression, neither age at diagnosis nor AML was associated with a higher mortality. Furthermore, in the initial cohort of 351 persons and the complete BMI data cohort of 236 persons, the mortality rates were lower than expected. It may be the initial sample was biased and the analysis could have been performed on a cohort of patients with less severe types of leukemia and lymphoma. This hypothesis is supported by the over representation of ALL in the cohort. 
+
+The results are also limited by not including those patients who died prior to 1 year. It could be that those who were the most undernourished were excluded from the analysis because of mortality early in their treatment course. 
+
+In conclusion, more research is needed to address the concerns raised by this analysis. Next steps will include performing the analysis on a larger sample of patients. A larger sample will also afford the opportunity to examine specific types of leukemia and lymphoma including ALL and AML. We will also use the larger sample to perform an analysis of the first 3 months of treatment to assess if mortality is higher for weight loss and lower BMI early in the treatment course. Taking these steps will address concerns raised by this initial study and will continue to investigate a promising area of supportive care for pediatric oncology patients. 
+
+
+### References
+1.	Modi AC, Rausch JR, Glauser TA. Patterns of nonadherence to antiepileptic drug therapy in children with newly diagnosed epilepsy. Jama. 2011;305(16):1669-1676.
+2.	Nagin DS, Odgers CL. Group-based trajectory modeling in clinical research. Annual review of clinical psychology. 2010;6:109-138.
+3.	Bhatia S. Disparities in cancer outcomes: lessons learned from children with cancer. Pediatric blood & cancer. 2011;56(6):994-1002.
+4.	Seif AE, Fisher BT, Li Y, et al. Patient and hospital factors associated with induction mortality in acute lymphoblastic leukemia. Pediatric blood & cancer. 2014;61(5):846-852.
+5.	Wang L, Bhatia S, Gomez SL, Yasui Y. Differential inequality trends over time in survival among U.S. children with acute lymphoblastic leukemia by race/ethnicity, age at diagnosis, and sex. Cancer epidemiology, biomarkers & prevention : a publication of the American Association for Cancer Research, cosponsored by the American Society of Preventive Oncology. 2015;24(11):1781-1788.
+6.	Co-Reyes E, Li R, Huh W, Chandra J. Malnutrition and obesity in pediatric oncology patients: causes, consequences, and interventions. Pediatric blood & cancer. 2012;59(7):1160-1167.
+7.      Sylvestre MP, et al. (2006). Classification of patterns of delirium severity scores over time in an elderly population. International Psychogeriatrics,18(4), 667-680. doi:10.1017/S1041610206003334.
+8.      Leffondree, K. et al. (2004). Statistical measures were proposed for identifying longitudinal patterns of change in quantitative health indicators. Journal of Clinical Epidemiology, 57, 1049-1062. doi : 10.1016/j.jclinepi.2004.02.012.
+9.      Vatnik, D., Sylvestre, MP. Package 'traj'. Repository CRAN. Date of Publication 2015-01-13.
+
+
+### Appendix 1: Measures used to determine trajectories in traj package
+1. Range
+2. Mean-over-time
+3. Standard deviation (SD)
+4. Coefficient of variation (CV)
+5. Change
+6. Mean change per unit time
+7. Change relative to the first score
+8. Change relative to the mean over time
+9. Slope of the linear model*
+10. R^2: Proportion of variance explained by the linear model
+11. Maximum of the first differences
+12. SD of the first differences
+13. SD of the first differences per time unit
+14. Mean of the absolute first differences
+15. Maximum of the absolute first differences
+16. Ratio of the maximum absolute difference to the mean-over-time
+17. Ratio of the maximum absolute first difference to the slope
+18. Ratio of the SD of the first differences to the slope
+19. Mean of the second differences
+20. Mean of the absolute second differences
+21. Maximum of the absolute second differences
+22. Ration of the maximum absolute second difference to the mean-over-time
+23. Ratio of the maximum absolute second difference to mean absolute first difference 24. Ratio of the mean absolute second difference to the mean absolute first difference
