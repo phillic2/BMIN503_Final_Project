@@ -8,13 +8,12 @@ This is a guide for anyone who needs to view or analyze the data used for the co
 
 The goal for this analysis was to determine the optimal number of trajectories to describe BMI patterns in pediatric leukemia and lymphoma patients and to compare the mortality rate of patients with a lower mean BMI compared with patients with a normal BMI. 
 
-Excluding this README, 6 files are included in this repository. A description of the files is as follows:
+Excluding this README, 4 files are included in this repository. A description of the files is as follows:
 1. "bmi_data_fake" is the raw csv file containing fabricated BMI data for an imaginary cohort of leukemia and lymphoma patients. It is modeled after the BMI z-score data found in the PEDSnet dataset. 
 2. "demo_dx_death_fake" is the raw csv file containing fabricated demographic, diagnosis, and mortality data for an imaginary cohort of leukemia and lymphoma patients. It is modeled after data found in the PEDSnet dataset.
 3. "phillips_final_project.rmd" contains the rmd file with the analysis along with a written description.
 4. "phillips_final_project.html" contains the html version of the analysis file.
-5. "cp_final_project" was a file created in error and can be ignored.
-6. "final_project_template" is a draft version of the final project and can be ignored. 
+
 
 Original README text instructions are as follows:
 This repository contains templates for your final written report and GitHub repository. Follow the instructions below to clone this repository, and then turn in your final project's code via a pull request to this repository.
